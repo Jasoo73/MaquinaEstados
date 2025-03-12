@@ -3,13 +3,24 @@
 #include <Wire.h>
 #include <SoftwareSerial.h>
 #include <TinyGPSPlus.h>
+#include <ESP8266WiFi.h>
 
 static const int RXPin = 2, TXPin = 0;
 
 static const uint32_t GPSBaud = 9600;
 
+const char* ssid = "UPBWiFi";       
+const char* password = "";    
+const char* serverIP = "54.211.24.118";  
+
+double latitud = 6.2455678;
+double longitud = -75.467888;
+double temperatura = 23;
+int id = 1001;
+
 TinyGPSPlus gps;
 
+WiFiClient client;
 // The serial connection to the GPS device​
 
 SoftwareSerial ss(RXPin, TXPin);
@@ -21,6 +32,21 @@ static void smartDelay(unsigned long ms);
 void setup() {
   sensor.begin(0x40);
   Serial.begin(115200);
+
+  delay(10);
+  pinMode(A0, INPUT);
+  WiFi.begin(ssid, password);
+  Serial.println();
+  Serial.println();
+  Serial.println("Connecting to");
+  Serial.println(ssid);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.println(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
 }
 
 void loop() {
@@ -49,6 +75,8 @@ void loop() {
 
             smartDelay(10);
 
+
+
             estado = 'c';
 
         case 'c':
@@ -58,6 +86,30 @@ void loop() {
             estado = 'a';
     }
 }
+
+// Función para enviar los datos al servidor Flask
+void sendthingspeak() {
+  String PostData = "";
+  Serial.println("Datos para enviar:");
+  PostData = String("id=" + String("id=" + String(id)+"; temperatura =" + String(temperatura,7)+"; longitud="+String(longitud,7+"; latitud="+String(latitud,7))));
+  // Prepara la solicitud HTTP POST
+  client.println("Host: 54.211.24.118 \n");
+  client.println("Host: 54.211.24.118");
+  client.println("POST /sensordata HTTP/1.1");
+  client.println("Connection: close");
+  client.println("Content-Type: application/x-www-form-urlencoded");
+  client.print("Content-Length: ");
+  client.println(PostData.length());
+  client.println();
+  client.print(PostData);  // Envía los datos
+
+  Serial.println("Datos enviados:");
+  Serial.println(PostData);  // Muestra los datos enviados en el monitor serial
+} else {
+  Serial.println("Error al conectar al servidor");
+}
+client.stop();  // Cierra la conexión
+
 
 static void smartDelay(unsigned long ms)
 {
