@@ -91,25 +91,28 @@ void loop() {
 void sendthingspeak() {
   String PostData = "";
   Serial.println("Datos para enviar:");
-  PostData = String("id=" + String("id=" + String(id)+"; temperatura =" + String(temperatura,7)+"; longitud="+String(longitud,7+"; latitud="+String(latitud,7))));
+  PostData = String("id=" + String(id)+"; temperatura =" + String(temperatura,7) +"; longitud="+ String(longitud,7)+"; latitud="+ String(latitud,7));
   // Prepara la solicitud HTTP POST
-  client.println("Host: 54.211.24.118 \n");
-  client.println("Host: 54.211.24.118");
-  client.println("POST /sensordata HTTP/1.1");
-  client.println("Connection: close");
-  client.println("Content-Type: application/x-www-form-urlencoded");
-  client.print("Content-Length: ");
-  client.println(PostData.length());
-  client.println();
-  client.print(PostData);  // Envía los datos
-
-  Serial.println("Datos enviados:");
-  Serial.println(PostData);  // Muestra los datos enviados en el monitor serial
-} else {
-  Serial.println("Error al conectar al servidor");
+  Serial.println(PostData);
+  if (client.connect(serverIP, 80))
+  {
+    Serial.println("conectado");
+    client.println("POST /sensor_send_data HTTP/1.1\n");
+    // poner la dirección IP del servidor
+    client.println("Host: 192.168.0.101\n");
+    client.println("User-Agent: Arduino/1.0");
+    client.println("Connection: close");
+    client.println("Content-Type: application/x-www-form-urlencoded;");
+    client.print("Content-Length: ");
+    client.println(PostData.length());
+    client.println();
+    client.println(PostData);
+  }
+  else 
+    {
+        Serial.println("error de conexion");
+    }
 }
-client.stop();  // Cierra la conexión
-
 
 static void smartDelay(unsigned long ms)
 {
