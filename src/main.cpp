@@ -27,7 +27,9 @@ SoftwareSerial ss(RXPin, TXPin);
 
 ClosedCube_HDC1080 sensor;
 
+
 static void smartDelay(unsigned long ms);
+void sendthingspeak();
 
 void setup() {
   sensor.begin(0x40);
@@ -72,6 +74,12 @@ void loop() {
         case 'b':
             temperatura = temperatura/10;
             humedad = humedad / 10;
+            
+            // Obtener la latitud y longitud del GPS
+            if (gps.location.isUpdated()) {
+              latitud = gps.location.lat();
+              longitud = gps.location.lng();
+            }
 
             smartDelay(10);
 
@@ -81,10 +89,12 @@ void loop() {
 
         case 'c':
             for (int i = 0; i < 5; i++){
-              smartDelay(10);
+              smartDelay(1000);
             }
             estado = 'a';
     }
+
+    sendthingspeak();
 }
 
 // Función para enviar los datos al servidor Flask
